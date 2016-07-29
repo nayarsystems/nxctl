@@ -493,13 +493,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			return
 		} else {
 
-			t1, ok := res.(map[string]interface{})
-			if !ok {
-				log.Println("Invalid result:", res)
-				return
-			}
-
-			templates, ok := t1["templates"].([]interface{})
+			templates, ok := res.([]interface{})
 			if !ok {
 				log.Println("Invalid result:", res)
 				return
