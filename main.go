@@ -25,28 +25,14 @@ func main() {
 	parsed := kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	if nc, err := nxcli.Dial(*serverIP, nil); err == nil {
-		if res, err := nc.Login(*user, *pass); err != nil {
-			log.Println("Couldn't login:", err)
-			return
-		} else {
-			if ei.N(res).M("ok").BoolZ() {
-				log.Println("Logged as", ei.N(res).M("user").StringZ())
-			} else {
-				log.Println("Unexpected reply:", res)
-				return
-			}
-		}
-
-		execCmd(nc, parsed)
+		exec(nc, parsed)
 	} else {
 		log.Println("Cannot connect to", *serverIP)
 	}
 }
 
-func execCmd(nc *nexus.NexusConn, parsed string) {
-	switch parsed {
-
-	case login.FullCommand():
+func exec(nc *nexus.NexusConn, parsed string) {
+	if parsed == login.FullCommand() {
 		if _, err := nc.Login(*loginName, *loginPass); err != nil {
 			log.Println("Couldn't login:", err)
 			return
@@ -54,7 +40,26 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println("Logged as", *loginName)
 			user = loginName
 		}
+		return
+	}
 
+	if res, err := nc.Login(*user, *pass); err != nil {
+		log.Println("Couldn't login:", err)
+		return
+	} else {
+		if ei.N(res).M("ok").BoolZ() {
+			log.Println("Logged as", ei.N(res).M("user").StringZ())
+		} else {
+			log.Println("Unexpected reply:", res)
+			return
+		}
+	}
+
+	execCmd(nc, parsed)
+}
+
+func execCmd(nc *nexus.NexusConn, parsed string) {
+	switch parsed {
 	case push.FullCommand():
 		if ret, err := nc.TaskPush(*pushMethod, *pushParams, time.Second*time.Duration(*timeout)); err != nil {
 			log.Println("Error:", err)
