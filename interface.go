@@ -69,6 +69,10 @@ var (
 	userReload       = userCmd.Command("reload", "Reloads users on a prefix")
 	userReloadPrefix = userReload.Arg("prefix", "prefix").Required().String()
 
+	userMaxSessions     = userCmd.Command("max-sessions", "Sets the maximum number of sessions for an user")
+	userMaxSessionsUser = userMaxSessions.Arg("username", "username").Required().String()
+	userMaxSessionsN    = userMaxSessions.Arg("max", "max").Required().Int()
+
 	///
 
 	sessionsCmd = app.Command("sessions", "Show sessions info")
@@ -121,8 +125,29 @@ var (
 	templateDelUser     = templateDel.Arg("user", "user").Required().String()
 	templateDelTemplate = templateDel.Arg("template", "template").Required().String()
 
-	templateList     = templateCmd.Command("list", "List the templates from the user")
-	templateListUser = templateList.Arg("user", "user").Required().String()
+	//
+
+	whitelistCmd = app.Command("whitelist", "Whitelist management")
+
+	whitelistAdd     = whitelistCmd.Command("add", "Whitelist an address for the user")
+	whitelistAddUser = whitelistAdd.Arg("user", "user").Required().String()
+	whitelistAddIP   = whitelistAdd.Arg("ip", "ip regex").Required().String()
+
+	whitelistDel     = whitelistCmd.Command("del", "Removes a whitelisted address from the user")
+	whitelistDelUser = whitelistDel.Arg("user", "user").Required().String()
+	whitelistDelIP   = whitelistDel.Arg("ip", "ip regex").Required().String()
+
+	//
+
+	blacklistCmd = app.Command("blacklist", "Blacklist management")
+
+	blacklistAdd     = blacklistCmd.Command("add", "Blacklist an address for the user")
+	blacklistAddUser = blacklistAdd.Arg("user", "user").Required().String()
+	blacklistAddIP   = blacklistAdd.Arg("ip", "ip regex").Required().String()
+
+	blacklistDel     = blacklistCmd.Command("del", "Removes a blacklist from the user")
+	blacklistDelUser = blacklistDel.Arg("user", "user").Required().String()
+	blacklistDelIP   = blacklistDel.Arg("ip", "ip regex").Required().String()
 
 	//
 
