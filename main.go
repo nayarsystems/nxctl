@@ -15,6 +15,7 @@ import (
 	nexus "github.com/jaracil/nxcli/nxcore"
 	"github.com/nayarsystems/kingpin"
 	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -25,10 +26,49 @@ func main() {
 
 	parsed := kingpin.MustParse(app.Parse(os.Args[1:]))
 
+	viper.SetConfigName(".nxctl")
+	viper.AddConfigPath("$HOME")
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Println(err)
+	}
+
+	if *user == "" {
+		if viper.IsSet("user") {
+			*user = viper.GetString("user")
+		} else {
+			*user = DEFAULT_USER
+		}
+	}
+	if *pass == "" {
+		if viper.IsSet("pass") {
+			*pass = viper.GetString("pass")
+		} else {
+			*pass = DEFAULT_PASS
+		}
+	}
+
+	if *serverIP == "" {
+		if viper.IsSet("server") {
+			*serverIP = viper.GetString("server")
+		} else {
+			*serverIP = DEFAULT_SERVER
+		}
+	}
+
+	if *timeout == 0 {
+		if viper.IsSet("timeout") {
+			*timeout = viper.GetInt("timeout")
+		} else {
+			*timeout = DEFAULT_TIMEOUT
+		}
+	}
+
 	if nc, err := nxcli.Dial(*serverIP, nil); err == nil {
+		log.Println("Connected to", *serverIP)
 		exec(nc, parsed)
 	} else {
-		log.Println("Cannot connect to", *serverIP)
+		log.Printf("Cannot connect to %s: %s\n", *serverIP, err)
 	}
 }
 
@@ -198,7 +238,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
 			table.SetAlignment(tablewriter.ALIGN_CENTER)
 			table.SetRowLine(true)
-			table.SetRowSeparator("·")
+			//table.SetRowSeparator(".")
 
 			for _, user := range res {
 				lines := 0

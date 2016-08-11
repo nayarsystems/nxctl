@@ -2,12 +2,19 @@ package main
 
 import "github.com/nayarsystems/kingpin"
 
+const (
+	DEFAULT_USER    = "test"
+	DEFAULT_PASS    = "test"
+	DEFAULT_SERVER  = "127.0.0.1:1717"
+	DEFAULT_TIMEOUT = 60
+)
+
 var (
 	app      = kingpin.New("cli", "Nexus command line interface")
-	serverIP = app.Flag("server", "Server address.").Default("127.0.0.1:1717").Short('s').String()
-	timeout  = app.Flag("timeout", "Execution timeout").Default("60").Short('t').Int()
-	user     = app.Flag("user", "Nexus username").Short('u').Default("test").String()
-	pass     = app.Flag("pass", "Nexus password").Default("test").Short('p').String()
+	serverIP = app.Flag("server", "Server address.").Short('s').String()
+	timeout  = app.Flag("timeout", "Execution timeout").Short('t').Int()
+	user     = app.Flag("user", "Nexus username").Short('u').String()
+	pass     = app.Flag("pass", "Nexus password").Short('p').String()
 
 	///
 
