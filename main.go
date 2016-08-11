@@ -317,17 +317,24 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println(err)
 			return
 		} else {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"ID", "Node", "User", "Protocol", "Remote Addr", "Since"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+			n := 0
 			for _, session := range res {
-				table := tablewriter.NewWriter(os.Stdout)
-				table.SetHeader([]string{"ID", "Node", "User", "Protocol", "Remote Addr", "Since"})
-				table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
 				for _, ses := range session.Sessions {
+					n++
 					table.Append([]string{ses.Id, ses.NodeId, session.User, ses.Protocol, ses.RemoteAddress, ses.CreationTime.Format("Mon Jan _2 15:04:05 2006")})
 				}
-				table.SetFooter([]string{"Sessions:", fmt.Sprintf("%d", session.N), "", "", "", ""})
-				table.Render() // Send output
-				fmt.Println()
+				table.Append([]string{"Sessions:", fmt.Sprintf("%d", session.N), "", "", "", ""})
+				table.Append([]string{"", "", "", "", "", ""})
+
 			}
+			table.Append([]string{"Total Sessions:", fmt.Sprintf("%d", n), "", "", "", ""})
+
+			table.Render() // Send output
+			fmt.Println()
+
 		}
 
 	case sessionsKick.FullCommand():
