@@ -15,6 +15,7 @@ The config is read using [Viper](https://github.com/spf13/viper), so it supports
 * /etc/nxctl/
 * %APPDATA%/nxctl/
 
+-- 
 
     $ cat /home/user/.config/nxctl/default.yml 
     user: defaultuser
