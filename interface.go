@@ -15,6 +15,7 @@ var (
 	timeout  = app.Flag("timeout", "Execution timeout").Short('t').Int()
 	user     = app.Flag("user", "Nexus username").Short('u').String()
 	pass     = app.Flag("pass", "Nexus password").Short('p').String()
+	config   = app.Flag("config", "Config filename").Short('c').String()
 
 	///
 

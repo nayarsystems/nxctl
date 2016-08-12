@@ -26,8 +26,17 @@ func main() {
 
 	parsed := kingpin.MustParse(app.Parse(os.Args[1:]))
 
-	viper.SetConfigName(".nxctl")
-	viper.AddConfigPath("$HOME")
+	if *config != "" {
+		viper.SetConfigName(*config)
+	} else {
+		viper.SetConfigName("default")
+	}
+	viper.AddConfigPath(".")
+	viper.AddConfigPath("$HOME/.nxctl/")
+	viper.AddConfigPath("$HOME/.config/nxctl/")
+	viper.AddConfigPath("$HOME/.local/config/nxctl/")
+	viper.AddConfigPath("/etc/nxctl/")
+	viper.AddConfigPath("%APPDATA%/nxctl/")
 	err := viper.ReadInConfig()
 	if err != nil {
 		log.Println(err)
@@ -41,8 +50,8 @@ func main() {
 		}
 	}
 	if *pass == "" {
-		if viper.IsSet("pass") {
-			*pass = viper.GetString("pass")
+		if viper.IsSet("password") {
+			*pass = viper.GetString("password")
 		} else {
 			*pass = DEFAULT_PASS
 		}
