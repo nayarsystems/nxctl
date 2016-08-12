@@ -243,18 +243,16 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			for _, user := range res {
 				lines := 0
 				for prefix, tags := range user.Tags {
-					for tag, val := range tags {
-						if lines == 0 {
-							table.Append([]string{user.User, fmt.Sprintf("%v", user.Templates), fmt.Sprintf("%v", user.Whitelist), fmt.Sprintf("%v", user.Blacklist), fmt.Sprintf("%d", user.MaxSessions), prefix, fmt.Sprintf("%s: %v", tag, val)})
-						} else {
-							table.Append([]string{"", "", "", "", "", prefix, fmt.Sprintf("%s: %v", tag, val)})
-						}
-						lines++
+					if lines == 0 {
+						table.Append([]string{user.User, fmt.Sprintf("%v", user.Templates), fmt.Sprintf("%v", user.Whitelist), fmt.Sprintf("%v", user.Blacklist), fmt.Sprintf("%d", user.MaxSessions), prefix, fmt.Sprintf("%v", tags)})
+					} else {
+						table.Append([]string{"", "", "", "", "", prefix, fmt.Sprintf("%v", tags)})
 					}
+					lines++
 				}
 
 				if lines == 0 {
-					table.Append([]string{user.User, fmt.Sprintf("%v", user.Templates), fmt.Sprintf("%v", user.Whitelist), fmt.Sprintf("%v", user.Blacklist), fmt.Sprintf("%d", user.MaxSessions)})
+					table.Append([]string{user.User, fmt.Sprintf("%v", user.Templates), fmt.Sprintf("%v", user.Whitelist), fmt.Sprintf("%v", user.Blacklist), fmt.Sprintf("%d", user.MaxSessions), "", ""})
 				}
 			}
 
