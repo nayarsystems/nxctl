@@ -518,7 +518,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 		}
 
 	case chanUnsub.FullCommand():
-		if pipe, err := nc.PipeOpen(*chanSubPipe); err != nil {
+		if pipe, err := nc.PipeOpen(*chanUnsubPipe); err != nil {
 			log.Println(err)
 			return
 		} else {
