@@ -73,12 +73,22 @@ func main() {
 		}
 	}
 
-	if nc, err := nxcli.Dial(*serverIP, nil); err == nil {
-		log.Println("Connected to", *serverIP)
-		exec(nc, parsed)
-	} else {
-		log.Printf("Cannot connect to %s: %s\n", *serverIP, err)
+	nc, err := nxcli.Dial(*serverIP, nil)
+	if err != nil {
+		if err == nxcli.ErrVersionIncompatible {
+			if !*ignoreapi {
+				log.Fatalf("Cannot connect to %s: %s\n", *serverIP, err)
+			} else {
+				log.Println("Ignoring API version incompatibility")
+			}
+		} else {
+			log.Fatalf("Cannot connect to %s: %s\n", *serverIP, err)
+		}
 	}
+
+	log.Println("Connected to", *serverIP)
+	exec(nc, parsed)
+
 }
 
 func exec(nc *nexus.NexusConn, parsed string) {

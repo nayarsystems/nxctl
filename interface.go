@@ -10,12 +10,13 @@ const (
 )
 
 var (
-	app      = kingpin.New("cli", "Nexus command line interface")
-	serverIP = app.Flag("server", "Server address.").Short('s').String()
-	timeout  = app.Flag("timeout", "Execution timeout").Short('t').Int()
-	user     = app.Flag("user", "Nexus username").Short('u').String()
-	pass     = app.Flag("pass", "Nexus password").Short('p').String()
-	config   = app.Flag("config", "Config filename").Short('c').String()
+	app       = kingpin.New("cli", "Nexus command line interface")
+	serverIP  = app.Flag("server", "Server address.").Short('s').String()
+	timeout   = app.Flag("timeout", "Execution timeout").Short('t').Int()
+	user      = app.Flag("user", "Nexus username").Short('u').String()
+	pass      = app.Flag("pass", "Nexus password").Short('p').String()
+	config    = app.Flag("config", "Config filename").Short('c').String()
+	ignoreapi = app.Flag("ignoreapi", "Ignore API version check").Bool()
 
 	///
 
