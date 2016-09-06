@@ -54,7 +54,7 @@ var (
 
 	///
 
-	userCmd = app.Command("user", "user management")
+	userCmd = app.Command("user", "User management")
 
 	userCreate     = userCmd.Command("create", "Create a new user")
 	userCreateName = userCreate.Arg("username", "username").Required().String()
@@ -84,7 +84,7 @@ var (
 
 	///
 
-	sessionsCmd = app.Command("sessions", "Show sessions info")
+	sessionsCmd = app.Command("sessions", "Sessions management")
 
 	sessionsList       = sessionsCmd.Command("list", "List active sessions")
 	sessionsListPrefix = sessionsList.Arg("prefix", "User prefix").Default("").String()
@@ -105,7 +105,7 @@ var (
 
 	///
 
-	tagsCmd = app.Command("tags", "tags management")
+	tagsCmd = app.Command("tags", "Tags management")
 
 	tagsSet       = tagsCmd.Command("set", "Set tags for an user on a prefix. Tags is a map like 'tag:value tag2:value2'")
 	tagsSetUser   = tagsSet.Arg("user", "user").Required().String()
@@ -124,7 +124,7 @@ var (
 
 	//
 
-	templateCmd = app.Command("template", "template management")
+	templateCmd = app.Command("template", "Template management")
 
 	templateAdd         = templateCmd.Command("add", "Add a template to the user")
 	templateAddUser     = templateAdd.Arg("user", "user").Required().String()
@@ -173,4 +173,14 @@ var (
 	chanPub     = chanCmd.Command("pub", "Publish a message to a topic")
 	chanPubChan = chanPub.Arg("topic", "Topic to subscribe to").Required().String()
 	chanPubMsg  = chanPub.Arg("data", "Data to send").Required().Strings()
+
+	//
+
+	syncCmd = app.Command("sync", "Sync commands")
+
+	syncLock     = syncCmd.Command("lock", "Grab a lock")
+	syncLockName = syncLock.Arg("name", "Name of the lock").Required().String()
+
+	syncUnlock     = syncCmd.Command("unlock", "Release a lock")
+	syncUnlockName = syncUnlock.Arg("name", "Name of the lock").Required().String()
 )

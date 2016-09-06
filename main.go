@@ -549,7 +549,22 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			return
 		} else {
 			log.Println("Result:", res)
+		}
 
+	case syncLock.FullCommand():
+		if res, err := nc.Lock(*syncLockName); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("Result:", res)
+		}
+
+	case syncUnlock.FullCommand():
+		if res, err := nc.Unlock(*syncUnlockName); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("Result:", res)
 		}
 	}
 }
