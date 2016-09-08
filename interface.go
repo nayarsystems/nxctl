@@ -34,6 +34,10 @@ var (
 	pushMethod = push.Arg("method", "Method to call").Required().String()
 	pushParams = push.Arg("params", "parameters").StringMap()
 
+	pushJ       = app.Command("pushj", "Execute a task.push rpc call on Nexus. Params is a json dict like: { 'param': value }")
+	pushJMethod = pushJ.Arg("method", "Method to call").Required().String()
+	pushJParams = pushJ.Arg("json {param:value,...}", "{'param': 3, 'other': {'val': true}}").Required().String()
+
 	pull       = app.Command("pull", "Execute a task.pull rpc call on Nexus")
 	pullMethod = pull.Arg("prefix", "Method to call").Required().String()
 

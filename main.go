@@ -134,6 +134,26 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			}
 		}
 
+	case pushJ.FullCommand():
+		var params map[string]interface{}
+		if json.Unmarshal([]byte(*pushJParams), &params) != nil {
+			log.Println("Error parsing params json:", *pushJParams)
+			return
+		}
+
+		if ret, err := nc.TaskPush(*pushJMethod, params, time.Second*time.Duration(*timeout)); err != nil {
+			log.Println("Error:", err)
+			return
+		} else {
+			b, _ := json.MarshalIndent(ret, "", "  ")
+			log.Println("Result:")
+			if s, err := strconv.Unquote(string(b)); err == nil {
+				fmt.Println(s)
+			} else {
+				fmt.Println(string(b))
+			}
+		}
+
 	case pull.FullCommand():
 		log.Println("Pulling", *pullMethod)
 		ret, err := nc.TaskPull(*pullMethod, time.Second*time.Duration(*timeout))
