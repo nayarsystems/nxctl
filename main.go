@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/jaracil/ei"
-	nxcli "github.com/jaracil/nxcli"
-	nexus "github.com/jaracil/nxcli/nxcore"
 	"github.com/nayarsystems/kingpin"
+	nxcli "github.com/nayarsystems/nxgo"
+	nexus "github.com/nayarsystems/nxgo/nxcore"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/viper"
 )
