@@ -2,12 +2,21 @@ package main
 
 import "github.com/nayarsystems/kingpin"
 
+const (
+	DEFAULT_USER    = "test"
+	DEFAULT_PASS    = "test"
+	DEFAULT_SERVER  = "127.0.0.1:1717"
+	DEFAULT_TIMEOUT = 60
+)
+
 var (
-	app      = kingpin.New("cli", "Nexus command line interface")
-	serverIP = app.Flag("server", "Server address.").Default("127.0.0.1:1717").Short('s').String()
-	timeout  = app.Flag("timeout", "Execution timeout").Default("60").Short('t').Int()
-	user     = app.Flag("user", "Nexus username").Short('u').Default("test").String()
-	pass     = app.Flag("pass", "Nexus password").Default("test").Short('p').String()
+	app       = kingpin.New("cli", "Nexus command line interface")
+	serverIP  = app.Flag("server", "Server address.").Short('s').String()
+	timeout   = app.Flag("timeout", "Execution timeout").Short('t').Int()
+	user      = app.Flag("user", "Nexus username").Short('u').String()
+	pass      = app.Flag("pass", "Nexus password").Short('p').String()
+	config    = app.Flag("config", "Config filename").Short('c').String()
+	ignoreapi = app.Flag("ignoreapi", "Ignore API version check").Bool()
 
 	///
 
@@ -24,6 +33,10 @@ var (
 	push       = app.Command("push", "Execute a task.push rpc call on Nexus")
 	pushMethod = push.Arg("method", "Method to call").Required().String()
 	pushParams = push.Arg("params", "parameters").StringMap()
+
+	pushJ       = app.Command("pushj", "Execute a task.push rpc call on Nexus. Params is a json dict like: { 'param': value }")
+	pushJMethod = pushJ.Arg("method", "Method to call").Required().String()
+	pushJParams = pushJ.Arg("json {param:value,...}", "{'param': 3, 'other': {'val': true}}").Required().String()
 
 	pull       = app.Command("pull", "Execute a task.pull rpc call on Nexus")
 	pullMethod = pull.Arg("prefix", "Method to call").Required().String()
@@ -68,6 +81,10 @@ var (
 
 	userReload       = userCmd.Command("reload", "Reloads users on a prefix")
 	userReloadPrefix = userReload.Arg("prefix", "prefix").Required().String()
+
+	userMaxSessions     = userCmd.Command("max-sessions", "Sets the maximum number of sessions for an user")
+	userMaxSessionsUser = userMaxSessions.Arg("username", "username").Required().String()
+	userMaxSessionsN    = userMaxSessions.Arg("max", "max").Required().Int()
 
 	///
 
@@ -121,8 +138,29 @@ var (
 	templateDelUser     = templateDel.Arg("user", "user").Required().String()
 	templateDelTemplate = templateDel.Arg("template", "template").Required().String()
 
-	templateList     = templateCmd.Command("list", "List the templates from the user")
-	templateListUser = templateList.Arg("user", "user").Required().String()
+	//
+
+	whitelistCmd = app.Command("whitelist", "Whitelist management")
+
+	whitelistAdd     = whitelistCmd.Command("add", "Whitelist an address for the user")
+	whitelistAddUser = whitelistAdd.Arg("user", "user").Required().String()
+	whitelistAddIP   = whitelistAdd.Arg("ip", "ip regex").Required().String()
+
+	whitelistDel     = whitelistCmd.Command("del", "Removes a whitelisted address from the user")
+	whitelistDelUser = whitelistDel.Arg("user", "user").Required().String()
+	whitelistDelIP   = whitelistDel.Arg("ip", "ip regex").Required().String()
+
+	//
+
+	blacklistCmd = app.Command("blacklist", "Blacklist management")
+
+	blacklistAdd     = blacklistCmd.Command("add", "Blacklist an address for the user")
+	blacklistAddUser = blacklistAdd.Arg("user", "user").Required().String()
+	blacklistAddIP   = blacklistAdd.Arg("ip", "ip regex").Required().String()
+
+	blacklistDel     = blacklistCmd.Command("del", "Removes a blacklist from the user")
+	blacklistDelUser = blacklistDel.Arg("user", "user").Required().String()
+	blacklistDelIP   = blacklistDel.Arg("ip", "ip regex").Required().String()
 
 	//
 

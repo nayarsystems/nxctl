@@ -11,9 +11,11 @@ import (
 	"time"
 
 	"github.com/jaracil/ei"
-	nxcli "github.com/jaracil/nxcli"
-	nexus "github.com/jaracil/nxcli/nxcore"
 	"github.com/nayarsystems/kingpin"
+	nxcli "github.com/nayarsystems/nxgo"
+	nexus "github.com/nayarsystems/nxgo/nxcore"
+	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -24,11 +26,69 @@ func main() {
 
 	parsed := kingpin.MustParse(app.Parse(os.Args[1:]))
 
-	if nc, err := nxcli.Dial(*serverIP, nil); err == nil {
-		exec(nc, parsed)
+	if *config != "" {
+		viper.SetConfigName(*config)
 	} else {
-		log.Println("Cannot connect to", *serverIP)
+		viper.SetConfigName("default")
 	}
+	viper.AddConfigPath(".")
+	viper.AddConfigPath("$HOME/.nxctl/")
+	viper.AddConfigPath("$HOME/.config/nxctl/")
+	viper.AddConfigPath("$HOME/.local/config/nxctl/")
+	viper.AddConfigPath("/etc/nxctl/")
+	viper.AddConfigPath("%APPDATA%/nxctl/")
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Println(err)
+	}
+
+	if *user == "" {
+		if viper.IsSet("user") {
+			*user = viper.GetString("user")
+		} else {
+			*user = DEFAULT_USER
+		}
+	}
+	if *pass == "" {
+		if viper.IsSet("password") {
+			*pass = viper.GetString("password")
+		} else {
+			*pass = DEFAULT_PASS
+		}
+	}
+
+	if *serverIP == "" {
+		if viper.IsSet("server") {
+			*serverIP = viper.GetString("server")
+		} else {
+			*serverIP = DEFAULT_SERVER
+		}
+	}
+
+	if *timeout == 0 {
+		if viper.IsSet("timeout") {
+			*timeout = viper.GetInt("timeout")
+		} else {
+			*timeout = DEFAULT_TIMEOUT
+		}
+	}
+
+	nc, err := nxcli.Dial(*serverIP, nil)
+	if err != nil {
+		if err == nxcli.ErrVersionIncompatible {
+			if !*ignoreapi {
+				log.Fatalf("Cannot connect to %s: %s\n", *serverIP, err)
+			} else {
+				log.Println("Ignoring API version incompatibility")
+			}
+		} else {
+			log.Fatalf("Cannot connect to %s: %s\n", *serverIP, err)
+		}
+	}
+
+	log.Println("Connected to", *serverIP)
+	exec(nc, parsed)
+
 }
 
 func exec(nc *nexus.NexusConn, parsed string) {
@@ -62,6 +122,26 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 	switch parsed {
 	case push.FullCommand():
 		if ret, err := nc.TaskPush(*pushMethod, *pushParams, time.Second*time.Duration(*timeout)); err != nil {
+			log.Println("Error:", err)
+			return
+		} else {
+			b, _ := json.MarshalIndent(ret, "", "  ")
+			log.Println("Result:")
+			if s, err := strconv.Unquote(string(b)); err == nil {
+				fmt.Println(s)
+			} else {
+				fmt.Println(string(b))
+			}
+		}
+
+	case pushJ.FullCommand():
+		var params map[string]interface{}
+		if json.Unmarshal([]byte(*pushJParams), &params) != nil {
+			log.Println("Error parsing params json:", *pushJParams)
+			return
+		}
+
+		if ret, err := nc.TaskPush(*pushJMethod, params, time.Second*time.Duration(*timeout)); err != nil {
 			log.Println("Error:", err)
 			return
 		} else {
@@ -118,15 +198,14 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println(err)
 			return
 		} else {
-			log.Printf("Pulls from [%s]:\n", *taskListPrefix)
-			for path, n := range res.Pulls {
-				log.Printf("\t[%s] - %d\n", path, n)
-			}
-			log.Printf("Pushes from [%s]:\n", *taskListPrefix)
-			for path, n := range res.Pushes {
-				log.Printf("\t[%s] - %d\n", path, n)
-			}
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Session", "ID", "Path", "Method", "Params", "User", "State", "Worker"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
 
+			for _, task := range res {
+				table.Append([]string{task.Id[:16], task.Id[16:], task.Path, task.Method, fmt.Sprintf("%v", task.Params), task.User, task.Stat, task.Tses})
+			}
+			table.Render()
 		}
 
 	case pipeWrite.FullCommand():
@@ -193,19 +272,43 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println(err)
 			return
 		} else {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"User", "Templates", "Whitelist", "Blacklist", "Max Sessions", "Prefix", "Tags"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+			table.SetAlignment(tablewriter.ALIGN_CENTER)
+			table.SetRowLine(true)
+			//table.SetRowSeparator(".")
+
 			for _, user := range res {
-				log.Printf("User: [%s]\n", user.User)
+				lines := 0
 				for prefix, tags := range user.Tags {
-					log.Printf("\tPrefix: [%s]\n", prefix)
-					for tag, val := range tags {
-						log.Printf("\t\t%s: %v\n", tag, val)
+					if lines == 0 {
+						table.Append([]string{user.User, fmt.Sprintf("%v", user.Templates), fmt.Sprintf("%v", user.Whitelist), fmt.Sprintf("%v", user.Blacklist), fmt.Sprintf("%d", user.MaxSessions), prefix, fmt.Sprintf("%v", tags)})
+					} else {
+						table.Append([]string{"", "", "", "", "", prefix, fmt.Sprintf("%v", tags)})
 					}
+					lines++
+				}
+
+				if lines == 0 {
+					table.Append([]string{user.User, fmt.Sprintf("%v", user.Templates), fmt.Sprintf("%v", user.Whitelist), fmt.Sprintf("%v", user.Blacklist), fmt.Sprintf("%d", user.MaxSessions), "", ""})
 				}
 			}
+
+			table.Render() // Send output
+			fmt.Println()
 		}
 
 	case userPass.FullCommand():
 		if _, err := nc.UserSetPass(*userPassName, *userPassPass); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("OK")
+		}
+
+	case userMaxSessions.FullCommand():
+		if _, err := nc.UserSetMaxSessions(*userMaxSessionsUser, *userMaxSessionsN); err != nil {
 			log.Println(err)
 			return
 		} else {
@@ -251,14 +354,24 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println(err)
 			return
 		} else {
-			log.Println("Sessions:")
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"ID", "Node", "User", "Protocol", "Remote Addr", "Since"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+			n := 0
 			for _, session := range res {
-				log.Printf("\tUser: [%s] - %d sessions", session.User, session.N)
 				for _, ses := range session.Sessions {
-					log.Printf("\t\tID: %s (Node:%s) - Protocol: %s - Remote: %s - Since: %s",
-						ses.Id, ses.NodeId, ses.Protocol, ses.RemoteAddress, ses.CreationTime.Format("Mon Jan _2 15:04:05 2006"))
+					n++
+					table.Append([]string{ses.Id, ses.NodeId, session.User, ses.Protocol, ses.RemoteAddress, ses.CreationTime.Format("Mon Jan _2 15:04:05 2006")})
 				}
+				table.Append([]string{"Sessions:", fmt.Sprintf("%d", session.N), "", "", "", ""})
+				table.Append([]string{"", "", "", "", "", ""})
+
 			}
+			table.Append([]string{"Total Sessions:", fmt.Sprintf("%d", n), "", "", "", ""})
+
+			table.Render() // Send output
+			fmt.Println()
+
 		}
 
 	case sessionsKick.FullCommand():
@@ -282,11 +395,19 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println(err)
 			return
 		} else {
-			log.Println("Nodes:")
-			for _, node := range res {
-				log.Printf("\tNodeId: [%s] - %d clients - Load: %0.2f/%0.2f/%0.2f", node.NodeId, node.Clients, node.Load["Load1"], node.Load["Load5"], node.Load["Load15"])
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Node", "Version", "Clients", "Load"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+			table.SetAlignment(tablewriter.ALIGN_CENTER)
 
+			n := 0
+			for _, node := range res {
+				n += node.Clients
+				table.Append([]string{node.NodeId, fmt.Sprintf("%s", node.Version), fmt.Sprintf("%d", node.Clients), fmt.Sprintf("%0.2f / %0.2f / %0.2f", node.Load["Load1"], node.Load["Load5"], node.Load["Load15"])})
 			}
+
+			table.SetFooter([]string{fmt.Sprintf("%d", len(res)), " ", fmt.Sprintf("%d", n), " "})
+			table.Render() // Send output
 		}
 
 	case tagsSet.FullCommand():
@@ -353,27 +474,36 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println("OK")
 		}
 
-	case templateList.FullCommand():
-		if res, err := nc.UserListTemplate(*templateListUser); err != nil {
+	case whitelistAdd.FullCommand():
+		if _, err := nc.UserAddWhitelist(*whitelistAddUser, *whitelistAddIP); err != nil {
 			log.Println(err)
 			return
 		} else {
+			log.Println("OK")
+		}
 
-			templates, ok := res.([]interface{})
-			if !ok {
-				log.Println("Invalid result:", res)
-				return
-			}
+	case whitelistDel.FullCommand():
+		if _, err := nc.UserDelWhitelist(*whitelistDelUser, *whitelistDelIP); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("OK")
+		}
 
-			if len(templates) == 0 {
-				log.Println("No templates assigned")
-				return
-			}
+	case blacklistAdd.FullCommand():
+		if _, err := nc.UserAddBlacklist(*blacklistAddUser, *blacklistAddIP); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("OK")
+		}
 
-			log.Println(*templateListUser, "templates:")
-			for _, v := range templates {
-				log.Println("*", v)
-			}
+	case blacklistDel.FullCommand():
+		if _, err := nc.UserDelBlacklist(*blacklistDelUser, *blacklistDelIP); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("OK")
 		}
 
 	case shell.FullCommand():
@@ -418,7 +548,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 		}
 
 	case chanUnsub.FullCommand():
-		if pipe, err := nc.PipeOpen(*chanSubPipe); err != nil {
+		if pipe, err := nc.PipeOpen(*chanUnsubPipe); err != nil {
 			log.Println(err)
 			return
 		} else {
