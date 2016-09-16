@@ -175,6 +175,10 @@ var (
 	chanUnsubChan = chanUnsub.Arg("topic", "Topic to subscribe to").Required().String()
 
 	chanPub     = chanCmd.Command("pub", "Publish a message to a topic")
-	chanPubChan = chanPub.Arg("topic", "Topic to subscribe to").Required().String()
+	chanPubChan = chanPub.Arg("topic", "Topic to publish to").Required().String()
 	chanPubMsg  = chanPub.Arg("data", "Data to send").Required().Strings()
+
+	chanPubJ     = chanCmd.Command("pubj", "Publish a message to a topic. Data is a json dict like: { 'param': value }")
+	chanPubJChan = chanPubJ.Arg("topic", "Topic to publish to").Required().String()
+	chanPubJMsg  = chanPubJ.Arg("data", "JSON data to send").Required().String()
 )

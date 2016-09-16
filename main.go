@@ -571,5 +571,19 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println("Result:", res)
 
 		}
+
+	case chanPubJ.FullCommand():
+		var msg map[string]interface{}
+		if json.Unmarshal([]byte(*chanPubJMsg), &msg) != nil {
+			log.Println("Error parsing msg json:", *chanPubJMsg)
+			return
+		}
+
+		if ret, err := nc.TopicPublish(*chanPubJChan, msg); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("Result:", ret)
+		}
 	}
 }
