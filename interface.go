@@ -86,6 +86,10 @@ var (
 	userMaxSessionsUser = userMaxSessions.Arg("username", "username").Required().String()
 	userMaxSessionsN    = userMaxSessions.Arg("max", "max").Required().Int()
 
+	userDisabled     = userCmd.Command("disabled", "Sets the disabled flag for an user")
+	userDisabledUser = userDisabled.Arg("username", "username").Required().String()
+	userDisabledB    = userDisabled.Arg("disabled", "disabled").Required().Bool()
+
 	///
 
 	sessionsCmd = app.Command("sessions", "Sessions management")

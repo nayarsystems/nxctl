@@ -273,7 +273,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			return
 		} else {
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"User", "Templates", "Whitelist", "Blacklist", "Max Sessions", "Prefix", "Tags"})
+			table.SetHeader([]string{"User", "Templates", "Whitelist", "Blacklist", "Max Sessions", "Prefix", "Tags", "Disabled"})
 			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
 			table.SetAlignment(tablewriter.ALIGN_CENTER)
 			table.SetRowLine(true)
@@ -283,7 +283,16 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 				lines := 0
 				for prefix, tags := range user.Tags {
 					if lines == 0 {
-						table.Append([]string{user.User, fmt.Sprintf("%v", user.Templates), fmt.Sprintf("%v", user.Whitelist), fmt.Sprintf("%v", user.Blacklist), fmt.Sprintf("%d", user.MaxSessions), prefix, fmt.Sprintf("%v", tags)})
+						table.Append([]string{
+							user.User,
+							fmt.Sprintf("%v", user.Templates),
+							fmt.Sprintf("%v", user.Whitelist),
+							fmt.Sprintf("%v", user.Blacklist),
+							fmt.Sprintf("%d", user.MaxSessions),
+							prefix,
+							fmt.Sprintf("%v", tags),
+							fmt.Sprintf("%t", user.Disabled),
+						})
 					} else {
 						table.Append([]string{"", "", "", "", "", prefix, fmt.Sprintf("%v", tags)})
 					}
@@ -291,7 +300,16 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 				}
 
 				if lines == 0 {
-					table.Append([]string{user.User, fmt.Sprintf("%v", user.Templates), fmt.Sprintf("%v", user.Whitelist), fmt.Sprintf("%v", user.Blacklist), fmt.Sprintf("%d", user.MaxSessions), "", ""})
+					table.Append([]string{
+						user.User,
+						fmt.Sprintf("%v", user.Templates),
+						fmt.Sprintf("%v", user.Whitelist),
+						fmt.Sprintf("%v", user.Blacklist),
+						fmt.Sprintf("%d", user.MaxSessions),
+						"",
+						"",
+						fmt.Sprintf("%t", user.Disabled),
+					})
 				}
 			}
 
@@ -309,6 +327,14 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 
 	case userMaxSessions.FullCommand():
 		if _, err := nc.UserSetMaxSessions(*userMaxSessionsUser, *userMaxSessionsN); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("OK")
+		}
+
+	case userDisabled.FullCommand():
+		if _, err := nc.UserSetDisabled(*userDisabledUser, *userDisabledB); err != nil {
 			log.Println(err)
 			return
 		} else {
