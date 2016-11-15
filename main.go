@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/jaracil/ei"
-	nxcli "github.com/jaracil/nxcli"
-	nexus "github.com/jaracil/nxcli/nxcore"
 	"github.com/nayarsystems/kingpin"
+	nxcli "github.com/nayarsystems/nxgo"
+	nexus "github.com/nayarsystems/nxgo/nxcore"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/viper"
 )
@@ -122,6 +122,26 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 	switch parsed {
 	case push.FullCommand():
 		if ret, err := nc.TaskPush(*pushMethod, *pushParams, time.Second*time.Duration(*timeout)); err != nil {
+			log.Println("Error:", err)
+			return
+		} else {
+			b, _ := json.MarshalIndent(ret, "", "  ")
+			log.Println("Result:")
+			if s, err := strconv.Unquote(string(b)); err == nil {
+				fmt.Println(s)
+			} else {
+				fmt.Println(string(b))
+			}
+		}
+
+	case pushJ.FullCommand():
+		var params map[string]interface{}
+		if json.Unmarshal([]byte(*pushJParams), &params) != nil {
+			log.Println("Error parsing params json:", *pushJParams)
+			return
+		}
+
+		if ret, err := nc.TaskPush(*pushJMethod, params, time.Second*time.Duration(*timeout)); err != nil {
 			log.Println("Error:", err)
 			return
 		} else {
@@ -565,6 +585,20 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			return
 		} else {
 			log.Println("Result:", res)
+		}
+
+	case chanPubJ.FullCommand():
+		var msg map[string]interface{}
+		if json.Unmarshal([]byte(*chanPubJMsg), &msg) != nil {
+			log.Println("Error parsing msg json:", *chanPubJMsg)
+			return
+		}
+
+		if ret, err := nc.TopicPublish(*chanPubJChan, msg); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("Result:", ret)
 		}
 	}
 }
