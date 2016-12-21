@@ -325,6 +325,14 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println("OK")
 		}
 
+	case userTags.FullCommand():
+		if r, err := nc.UserGetTags(*userTagsUser); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println(r)
+		}
+
 	case userMaxSessions.FullCommand():
 		if _, err := nc.UserSetMaxSessions(*userMaxSessionsUser, *userMaxSessionsN); err != nil {
 			log.Println(err)

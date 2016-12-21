@@ -90,6 +90,9 @@ var (
 	userDisabledUser = userDisabled.Arg("username", "username").Required().String()
 	userDisabledB    = userDisabled.Arg("disabled", "disabled").Required().Bool()
 
+	userTags     = userCmd.Command("tags", "Gets the effective tags for an user")
+	userTagsUser = userTags.Arg("username", "username").Required().String()
+
 	///
 
 	sessionsCmd = app.Command("sessions", "Sessions management")
