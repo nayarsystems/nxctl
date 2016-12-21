@@ -77,7 +77,12 @@ func main() {
 	if err != nil {
 		if err == nxcli.ErrVersionIncompatible {
 			if !*ignoreapi {
-				log.Fatalf("Cannot connect to %s: %s\n", *serverIP, err)
+				if v, err := nc.Version(); err == nil {
+					log.Printf("Cannot connect to %s: Incompatible versions: Server: %s - Client: %s\n", *serverIP, ei.N(v).M("version").StringZ(), nxcli.Version.String())
+				} else {
+					log.Printf("Cannot connect to %s: Incompatible versions: Server: %s - Client: %s\n", *serverIP, "unknown", nxcli.Version.String())
+				}
+				log.Fatalln("Use --ignoreapi if you want to continue regardless the version difference")
 			} else {
 				log.Println("Ignoring API version incompatibility")
 			}
@@ -92,13 +97,28 @@ func main() {
 }
 
 func exec(nc *nexus.NexusConn, parsed string) {
-	if parsed == login.FullCommand() {
+	switch parsed {
+
+	case login.FullCommand():
 		if _, err := nc.Login(*loginName, *loginPass); err != nil {
 			log.Println("Couldn't login:", err)
 			return
 		} else {
 			log.Println("Logged as", *loginName)
 			user = loginName
+		}
+		return
+	case version.FullCommand():
+		if ret, err := nc.Version(); err != nil {
+			log.Println("Error:", err)
+			return
+		} else {
+			log.Println("Nexus client:", nxcli.Version.String())
+			if v, err := ei.N(ret).M("version").String(); err == nil {
+				log.Println("Nexus server:", v)
+			} else {
+				log.Printf("Nexus server: %#v\n", ret)
+			}
 		}
 		return
 	}
@@ -120,6 +140,7 @@ func exec(nc *nexus.NexusConn, parsed string) {
 
 func execCmd(nc *nexus.NexusConn, parsed string) {
 	switch parsed {
+
 	case push.FullCommand():
 		if ret, err := nc.TaskPush(*pushMethod, *pushParams, time.Second*time.Duration(*timeout)); err != nil {
 			log.Println("Error:", err)

@@ -24,6 +24,10 @@ var (
 
 	///
 
+	version = app.Command("version", "Display versions")
+
+	///
+
 	login     = app.Command("login", "Tests to login with an username/password and exits")
 	loginName = login.Arg("username", "username").Required().String()
 	loginPass = login.Arg("password", "password").Required().String()
