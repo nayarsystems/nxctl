@@ -24,6 +24,10 @@ var (
 
 	///
 
+	version = app.Command("version", "Display versions")
+
+	///
+
 	login     = app.Command("login", "Tests to login with an username/password and exits")
 	loginName = login.Arg("username", "username").Required().String()
 	loginPass = login.Arg("password", "password").Required().String()
@@ -58,7 +62,7 @@ var (
 
 	///
 
-	userCmd = app.Command("user", "user management")
+	userCmd = app.Command("user", "User management")
 
 	userCreate     = userCmd.Command("create", "Create a new user")
 	userCreateName = userCreate.Arg("username", "username").Required().String()
@@ -86,9 +90,16 @@ var (
 	userMaxSessionsUser = userMaxSessions.Arg("username", "username").Required().String()
 	userMaxSessionsN    = userMaxSessions.Arg("max", "max").Required().Int()
 
+	userDisabled     = userCmd.Command("disabled", "Sets the disabled flag for an user")
+	userDisabledUser = userDisabled.Arg("username", "username").Required().String()
+	userDisabledB    = userDisabled.Arg("disabled", "disabled").Required().Bool()
+
+	userTags     = userCmd.Command("tags", "Gets the effective tags for an user")
+	userTagsUser = userTags.Arg("username", "username").Required().String()
+
 	///
 
-	sessionsCmd = app.Command("sessions", "Show sessions info")
+	sessionsCmd = app.Command("sessions", "Sessions management")
 
 	sessionsList       = sessionsCmd.Command("list", "List active sessions")
 	sessionsListPrefix = sessionsList.Arg("prefix", "User prefix").Default("").String()
@@ -109,7 +120,7 @@ var (
 
 	///
 
-	tagsCmd = app.Command("tags", "tags management")
+	tagsCmd = app.Command("tags", "Tags management")
 
 	tagsSet       = tagsCmd.Command("set", "Set tags for an user on a prefix. Tags is a map like 'tag:value tag2:value2'")
 	tagsSetUser   = tagsSet.Arg("user", "user").Required().String()
@@ -128,7 +139,7 @@ var (
 
 	//
 
-	templateCmd = app.Command("template", "template management")
+	templateCmd = app.Command("template", "Template management")
 
 	templateAdd         = templateCmd.Command("add", "Add a template to the user")
 	templateAddUser     = templateAdd.Arg("user", "user").Required().String()
@@ -175,6 +186,20 @@ var (
 	chanUnsubChan = chanUnsub.Arg("topic", "Topic to subscribe to").Required().String()
 
 	chanPub     = chanCmd.Command("pub", "Publish a message to a topic")
-	chanPubChan = chanPub.Arg("topic", "Topic to subscribe to").Required().String()
+	chanPubChan = chanPub.Arg("topic", "Topic to publish to").Required().String()
 	chanPubMsg  = chanPub.Arg("data", "Data to send").Required().Strings()
+
+	chanPubJ     = chanCmd.Command("pubj", "Publish a message to a topic. Data is a json dict like: { 'param': value }")
+	chanPubJChan = chanPubJ.Arg("topic", "Topic to publish to").Required().String()
+	chanPubJMsg  = chanPubJ.Arg("data", "JSON data to send").Required().String()
+
+	//
+
+	syncCmd = app.Command("sync", "Sync commands")
+
+	syncLock     = syncCmd.Command("lock", "Grab a lock")
+	syncLockName = syncLock.Arg("name", "Name of the lock").Required().String()
+
+	syncUnlock     = syncCmd.Command("unlock", "Release a lock")
+	syncUnlockName = syncUnlock.Arg("name", "Name of the lock").Required().String()
 )

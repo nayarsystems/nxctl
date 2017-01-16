@@ -77,7 +77,12 @@ func main() {
 	if err != nil {
 		if err == nxcli.ErrVersionIncompatible {
 			if !*ignoreapi {
-				log.Fatalf("Cannot connect to %s: %s\n", *serverIP, err)
+				if v, err := nc.Version(); err == nil {
+					log.Printf("Cannot connect to %s: Incompatible versions: Server: %s - Client: %s\n", *serverIP, ei.N(v).M("version").StringZ(), nxcli.Version.String())
+				} else {
+					log.Printf("Cannot connect to %s: Incompatible versions: Server: %s - Client: %s\n", *serverIP, "unknown", nxcli.Version.String())
+				}
+				log.Fatalln("Use --ignoreapi if you want to continue regardless the version difference")
 			} else {
 				log.Println("Ignoring API version incompatibility")
 			}
@@ -92,13 +97,28 @@ func main() {
 }
 
 func exec(nc *nexus.NexusConn, parsed string) {
-	if parsed == login.FullCommand() {
+	switch parsed {
+
+	case login.FullCommand():
 		if _, err := nc.Login(*loginName, *loginPass); err != nil {
 			log.Println("Couldn't login:", err)
 			return
 		} else {
 			log.Println("Logged as", *loginName)
 			user = loginName
+		}
+		return
+	case version.FullCommand():
+		if ret, err := nc.Version(); err != nil {
+			log.Println("Error:", err)
+			return
+		} else {
+			log.Println("Nexus client:", nxcli.Version.String())
+			if v, err := ei.N(ret).M("version").String(); err == nil {
+				log.Println("Nexus server:", v)
+			} else {
+				log.Printf("Nexus server: %#v\n", ret)
+			}
 		}
 		return
 	}
@@ -120,6 +140,7 @@ func exec(nc *nexus.NexusConn, parsed string) {
 
 func execCmd(nc *nexus.NexusConn, parsed string) {
 	switch parsed {
+
 	case push.FullCommand():
 		if ret, err := nc.TaskPush(*pushMethod, *pushParams, time.Second*time.Duration(*timeout)); err != nil {
 			log.Println("Error:", err)
@@ -273,7 +294,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			return
 		} else {
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"User", "Templates", "Whitelist", "Blacklist", "Max Sessions", "Prefix", "Tags"})
+			table.SetHeader([]string{"User", "Templates", "Whitelist", "Blacklist", "Max Sessions", "Prefix", "Tags", "Disabled"})
 			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
 			table.SetAlignment(tablewriter.ALIGN_CENTER)
 			table.SetRowLine(true)
@@ -283,7 +304,16 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 				lines := 0
 				for prefix, tags := range user.Tags {
 					if lines == 0 {
-						table.Append([]string{user.User, fmt.Sprintf("%v", user.Templates), fmt.Sprintf("%v", user.Whitelist), fmt.Sprintf("%v", user.Blacklist), fmt.Sprintf("%d", user.MaxSessions), prefix, fmt.Sprintf("%v", tags)})
+						table.Append([]string{
+							user.User,
+							fmt.Sprintf("%v", user.Templates),
+							fmt.Sprintf("%v", user.Whitelist),
+							fmt.Sprintf("%v", user.Blacklist),
+							fmt.Sprintf("%d", user.MaxSessions),
+							prefix,
+							fmt.Sprintf("%v", tags),
+							fmt.Sprintf("%t", user.Disabled),
+						})
 					} else {
 						table.Append([]string{"", "", "", "", "", prefix, fmt.Sprintf("%v", tags)})
 					}
@@ -291,7 +321,16 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 				}
 
 				if lines == 0 {
-					table.Append([]string{user.User, fmt.Sprintf("%v", user.Templates), fmt.Sprintf("%v", user.Whitelist), fmt.Sprintf("%v", user.Blacklist), fmt.Sprintf("%d", user.MaxSessions), "", ""})
+					table.Append([]string{
+						user.User,
+						fmt.Sprintf("%v", user.Templates),
+						fmt.Sprintf("%v", user.Whitelist),
+						fmt.Sprintf("%v", user.Blacklist),
+						fmt.Sprintf("%d", user.MaxSessions),
+						"",
+						"",
+						fmt.Sprintf("%t", user.Disabled),
+					})
 				}
 			}
 
@@ -307,8 +346,24 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println("OK")
 		}
 
+	case userTags.FullCommand():
+		if r, err := nc.UserGetTags(*userTagsUser); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println(r)
+		}
+
 	case userMaxSessions.FullCommand():
 		if _, err := nc.UserSetMaxSessions(*userMaxSessionsUser, *userMaxSessionsN); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("OK")
+		}
+
+	case userDisabled.FullCommand():
+		if _, err := nc.UserSetDisabled(*userDisabledUser, *userDisabledB); err != nil {
 			log.Println(err)
 			return
 		} else {
@@ -569,7 +624,36 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			return
 		} else {
 			log.Println("Result:", res)
+		}
 
+	case syncLock.FullCommand():
+		if res, err := nc.Lock(*syncLockName); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("Result:", res)
+		}
+
+	case syncUnlock.FullCommand():
+		if res, err := nc.Unlock(*syncUnlockName); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("Result:", res)
+		}
+
+	case chanPubJ.FullCommand():
+		var msg map[string]interface{}
+		if json.Unmarshal([]byte(*chanPubJMsg), &msg) != nil {
+			log.Println("Error parsing msg json:", *chanPubJMsg)
+			return
+		}
+
+		if ret, err := nc.TopicPublish(*chanPubJChan, msg); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("Result:", ret)
 		}
 	}
 }
