@@ -94,9 +94,6 @@ var (
 	userDisabledUser = userDisabled.Arg("username", "username").Required().String()
 	userDisabledB    = userDisabled.Arg("disabled", "disabled").Required().Bool()
 
-	userTags     = userCmd.Command("tags", "Gets the effective tags for an user")
-	userTagsUser = userTags.Arg("username", "username").Required().String()
-
 	///
 
 	sessionsCmd = app.Command("sessions", "Sessions management")
@@ -121,6 +118,13 @@ var (
 	///
 
 	tagsCmd = app.Command("tags", "Tags management")
+
+	tagsGet     = tagsCmd.Command("get", "Get tags for an user")
+	tagsGetUser = tagsGet.Arg("user", "User to get tags from").Required().String()
+
+	tagsEffective       = tagsCmd.Command("effective", "Get effective tags for an user on a prefix (higher tags on hierachy will overwrite lower ones)")
+	tagsEffectiveUser   = tagsEffective.Arg("user", "User to get tags from").Required().String()
+	tagsEffectivePrefix = tagsEffective.Arg("prefix", "Prefix to get effective user tags").Required().String()
 
 	tagsSet       = tagsCmd.Command("set", "Set tags for an user on a prefix. Tags is a map like 'tag:value tag2:value2'")
 	tagsSetUser   = tagsSet.Arg("user", "user").Required().String()
