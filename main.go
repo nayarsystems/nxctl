@@ -346,14 +346,6 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println("OK")
 		}
 
-	case userTags.FullCommand():
-		if r, err := nc.UserGetTags(*userTagsUser); err != nil {
-			log.Println(err)
-			return
-		} else {
-			log.Println(r)
-		}
-
 	case userMaxSessions.FullCommand():
 		if _, err := nc.UserSetMaxSessions(*userMaxSessionsUser, *userMaxSessionsN); err != nil {
 			log.Println(err)
@@ -463,6 +455,46 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 
 			table.SetFooter([]string{fmt.Sprintf("%d", len(res)), " ", fmt.Sprintf("%d", n), " "})
 			table.Render() // Send output
+		}
+
+	case tagsGet.FullCommand():
+		r, err := nc.UserGetTags(*tagsGetUser)
+		if err != nil {
+			log.Println(err)
+			return
+		} else {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Prefix", "Tags"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+			table.SetAlignment(tablewriter.ALIGN_CENTER)
+			table.SetRowLine(true)
+			//table.SetRowSeparator(".")
+
+			for prefix, tags := range ei.N(r).M("tags").MapStrZ() {
+				table.Append([]string{prefix, fmt.Sprintf("%v", tags)})
+			}
+			table.Render() // Send output
+			fmt.Println()
+		}
+
+	case tagsEffective.FullCommand():
+		r, err := nc.UserGetEffectiveTags(*tagsEffectiveUser, *tagsEffectivePrefix)
+		if err != nil {
+			log.Println(err)
+			return
+		} else {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Tag", "Value"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+			table.SetAlignment(tablewriter.ALIGN_CENTER)
+			table.SetRowLine(true)
+			//table.SetRowSeparator(".")
+
+			for tag, val := range ei.N(r).M("tags").MapStrZ() {
+				table.Append([]string{tag, fmt.Sprintf("%v", val)})
+			}
+			table.Render() // Send output
+			fmt.Println()
 		}
 
 	case tagsSet.FullCommand():
