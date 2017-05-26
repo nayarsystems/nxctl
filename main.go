@@ -470,7 +470,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			table.SetRowLine(true)
 			//table.SetRowSeparator(".")
 
-			for prefix, tags := range ei.N(r).MapStrZ() {
+			for prefix, tags := range ei.N(r).M("tags").MapStrZ() {
 				table.Append([]string{prefix, fmt.Sprintf("%v", tags)})
 			}
 			table.Render() // Send output
@@ -490,7 +490,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			table.SetRowLine(true)
 			//table.SetRowSeparator(".")
 
-			for tag, val := range ei.N(r).MapStrZ() {
+			for tag, val := range ei.N(r).M("tags").MapStrZ() {
 				table.Append([]string{tag, fmt.Sprintf("%v", val)})
 			}
 			table.Render() // Send output
