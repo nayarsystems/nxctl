@@ -443,17 +443,23 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			return
 		} else {
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"Node", "Version", "Clients", "Load"})
+			table.SetHeader([]string{"Node", "Version", "Clients", "Listening", "Load"})
 			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
 			table.SetAlignment(tablewriter.ALIGN_CENTER)
 
 			n := 0
 			for _, node := range res {
 				n += node.Clients
-				table.Append([]string{node.NodeId, fmt.Sprintf("%s", node.Version), fmt.Sprintf("%d", node.Clients), fmt.Sprintf("%0.2f / %0.2f / %0.2f", node.Load["Load1"], node.Load["Load5"], node.Load["Load15"])})
+				table.Append([]string{
+					node.NodeId,
+					fmt.Sprintf("%s", node.Version),
+					fmt.Sprintf("%d", node.Clients),
+					fmt.Sprintf("%t", node.Listening),
+					fmt.Sprintf("%0.2f / %0.2f / %0.2f", node.Load["Load1"], node.Load["Load5"], node.Load["Load15"]),
+				})
 			}
 
-			table.SetFooter([]string{fmt.Sprintf("%d", len(res)), " ", fmt.Sprintf("%d", n), " "})
+			table.SetFooter([]string{fmt.Sprintf("%d", len(res)), " ", fmt.Sprintf("%d", n), " ", " "})
 			table.Render() // Send output
 		}
 
