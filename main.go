@@ -294,7 +294,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			return
 		} else {
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"User", "Templates", "Whitelist", "Blacklist", "Max Sessions", "Prefix", "Tags", "Disabled"})
+			table.SetHeader([]string{"User", "Created At", "Templates", "Whitelist", "Blacklist", "Max Sessions", "Prefix", "Tags", "Disabled"})
 			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
 			table.SetAlignment(tablewriter.ALIGN_CENTER)
 			table.SetRowLine(true)
@@ -306,6 +306,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 					if lines == 0 {
 						table.Append([]string{
 							user.User,
+							user.CreatedAt.String(),
 							fmt.Sprintf("%v", user.Templates),
 							fmt.Sprintf("%v", user.Whitelist),
 							fmt.Sprintf("%v", user.Blacklist),
@@ -323,6 +324,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 				if lines == 0 {
 					table.Append([]string{
 						user.User,
+						user.CreatedAt.String(),
 						fmt.Sprintf("%v", user.Templates),
 						fmt.Sprintf("%v", user.Whitelist),
 						fmt.Sprintf("%v", user.Blacklist),
