@@ -215,7 +215,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 		}
 
 	case taskList.FullCommand():
-		if res, err := nc.TaskList(*taskListPrefix, *taskListLimit, *taskListSkip); err != nil {
+		if res, err := nc.TaskList(*taskListPrefix, *taskListLimit, *taskListSkip, &nexus.ListOpts{LimitByDepth: true, Depth: *taskListDepth, Filter: *taskListFilter}); err != nil {
 			log.Println(err)
 			return
 		} else {
@@ -289,7 +289,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 	case userList.FullCommand():
 		log.Printf("Listing users on \"%s\"", *userListPrefix)
 
-		if res, err := nc.UserList(*userListPrefix, *userListLimit, *userListSkip); err != nil {
+		if res, err := nc.UserList(*userListPrefix, *userListLimit, *userListSkip, &nexus.ListOpts{LimitByDepth: true, Depth: *userListDepth, Filter: *userListFilter}); err != nil {
 			log.Println(err)
 			return
 		} else {
@@ -399,7 +399,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 		}
 
 	case sessionsList.FullCommand():
-		if res, err := nc.SessionList(*sessionsListPrefix, *sessionsListLimit, *sessionsListSkip); err != nil {
+		if res, err := nc.SessionList(*sessionsListPrefix, *sessionsListLimit, *sessionsListSkip, &nexus.ListOpts{LimitByDepth: true, Depth: *sessionsListDepth, Filter: *sessionsListFilter}); err != nil {
 			log.Println(err)
 			return
 		} else {
@@ -666,6 +666,24 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println("Result:", res)
 		}
 
+	case chanList.FullCommand():
+		if res, err := nc.TopicList(*chanListPrefix, *chanListLimit, *chanListSkip, &nexus.ListOpts{LimitByDepth: true, Depth: *chanListDepth, Filter: *chanListFilter}); err != nil {
+			log.Println(err)
+			return
+		} else {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Topic", "Subscribers"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+			for _, topic := range res {
+				table.Append([]string{topic.Topic, fmt.Sprintf("%d", topic.Subscribers)})
+
+			}
+
+			table.Render() // Send output
+			fmt.Println()
+
+		}
+
 	case syncLock.FullCommand():
 		if res, err := nc.Lock(*syncLockName); err != nil {
 			log.Println(err)
@@ -680,6 +698,24 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			return
 		} else {
 			log.Println("Result:", res)
+		}
+
+	case syncList.FullCommand():
+		if res, err := nc.LockList(*syncListPrefix, *syncListLimit, *syncListSkip, &nexus.ListOpts{LimitByDepth: true, Depth: *syncListDepth, Filter: *syncListFilter}); err != nil {
+			log.Println(err)
+			return
+		} else {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"ID", "Owner"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+			for _, lock := range res {
+				table.Append([]string{lock.Id, lock.Owner})
+
+			}
+
+			table.Render() // Send output
+			fmt.Println()
+
 		}
 
 	case chanPubJ.FullCommand():

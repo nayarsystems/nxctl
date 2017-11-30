@@ -47,6 +47,8 @@ var (
 
 	taskList       = app.Command("list", "Show push/pulls happening on a prefix")
 	taskListPrefix = taskList.Arg("prefix", "prefix").Default("").String()
+	taskListDepth  = taskList.Flag("depth", "Limit the search to a depth of subprefixes").Default("-1").Int()
+	taskListFilter = taskList.Flag("filter", "A RE2 regular expression to filter the results by prefix").Default("").String()
 	taskListLimit  = taskList.Flag("limit", "Limit the number of tasks returned").Default("100").Int()
 	taskListSkip   = taskList.Flag("skip", "Skip a number of tasks before applying the limit").Default("0").Int()
 
@@ -77,6 +79,8 @@ var (
 
 	userList       = userCmd.Command("list", "List users on a prefix")
 	userListPrefix = userList.Arg("prefix", "prefix").Default("").String()
+	userListDepth  = userList.Flag("depth", "Limit the search to a depth of subprefixes").Default("-1").Int()
+	userListFilter = userList.Flag("filter", "A RE2 regular expression to filter the results by user").Default("").String()
 	userListLimit  = userList.Flag("limit", "Limit the number of users returned").Default("100").Int()
 	userListSkip   = userList.Flag("skip", "Skip a number of elements before applying the limit").Default("0").Int()
 
@@ -100,6 +104,8 @@ var (
 
 	sessionsList       = sessionsCmd.Command("list", "List active sessions")
 	sessionsListPrefix = sessionsList.Arg("prefix", "User prefix").Default("").String()
+	sessionsListDepth  = sessionsList.Flag("depth", "Limit the search to a depth of subprefixes").Default("-1").Int()
+	sessionsListFilter = sessionsList.Flag("filter", "A RE2 regular expression to filter the results by user").Default("").String()
 	sessionsListLimit  = sessionsList.Flag("limit", "Limit the number of sessions returned").Default("100").Int()
 	sessionsListSkip   = sessionsList.Flag("skip", "Skip a number of elements before applying the limit").Default("0").Int()
 
@@ -197,6 +203,13 @@ var (
 	chanPubJChan = chanPubJ.Arg("topic", "Topic to publish to").Required().String()
 	chanPubJMsg  = chanPubJ.Arg("data", "JSON data to send").Required().String()
 
+	chanList       = chanCmd.Command("list", "List topics on a prefix")
+	chanListPrefix = chanList.Arg("prefix", "prefix").Default("").String()
+	chanListDepth  = chanList.Flag("depth", "Limit the search to a depth of subprefixes").Default("-1").Int()
+	chanListFilter = chanList.Flag("filter", "A RE2 regular expression to filter the results by topic").Default("").String()
+	chanListLimit  = chanList.Flag("limit", "Limit the number of topics returned").Default("100").Int()
+	chanListSkip   = chanList.Flag("skip", "Skip a number of elements before applying the limit").Default("0").Int()
+
 	//
 
 	syncCmd = app.Command("sync", "Sync commands")
@@ -206,4 +219,11 @@ var (
 
 	syncUnlock     = syncCmd.Command("unlock", "Release a lock")
 	syncUnlockName = syncUnlock.Arg("name", "Name of the lock").Required().String()
+
+	syncList       = syncCmd.Command("list", "List locks on a prefix")
+	syncListPrefix = syncList.Arg("prefix", "prefix").Default("").String()
+	syncListDepth  = syncList.Flag("depth", "Limit the search to a depth of subprefixes").Default("-1").Int()
+	syncListFilter = syncList.Flag("filter", "A RE2 regular expression to filter the results by lock").Default("").String()
+	syncListLimit  = syncList.Flag("limit", "Limit the number of locks returned").Default("100").Int()
+	syncListSkip   = syncList.Flag("skip", "Skip a number of elements before applying the limit").Default("0").Int()
 )
