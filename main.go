@@ -306,6 +306,15 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println("OK")
 		}
 
+	case userRename.FullCommand():
+		log.Printf("Renaming user \"%s\" to \"%s\"", *userRenameName, *userRenameNew)
+		if _, err := nc.UserRename(*userRenameName, *userRenameNew); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("OK")
+		}
+
 	case userList.FullCommand():
 		log.Printf("Listing users on \"%s\"", *userListPrefix)
 

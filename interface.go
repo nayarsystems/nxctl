@@ -78,6 +78,10 @@ var (
 	userDelete     = userCmd.Command("delete", "Delete an user")
 	userDeleteName = userDelete.Arg("username", "username").Required().String()
 
+	userRename     = userCmd.Command("rename", "Rename a user")
+	userRenameName = userRename.Arg("username", "username").Required().String()
+	userRenameNew  = userRename.Arg("newusername", "newusername").Required().String()
+
 	userPass     = userCmd.Command("passwd", "Change an user password")
 	userPassName = userPass.Arg("username", "username").Required().String()
 	userPassPass = userPass.Arg("password", "password").Required().String()
