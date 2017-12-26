@@ -47,8 +47,15 @@ var (
 
 	taskList       = app.Command("list", "Show push/pulls happening on a prefix")
 	taskListPrefix = taskList.Arg("prefix", "prefix").Default("").String()
+	taskListDepth  = taskList.Flag("depth", "Limit the search to a depth of subprefixes").Default("-1").Int()
+	taskListFilter = taskList.Flag("filter", "A RE2 regular expression to filter the results by prefix").Default("").String()
 	taskListLimit  = taskList.Flag("limit", "Limit the number of tasks returned").Default("100").Int()
 	taskListSkip   = taskList.Flag("skip", "Skip a number of tasks before applying the limit").Default("0").Int()
+
+	taskCount            = app.Command("count", "Count push/pulls happening on a prefix")
+	taskCountPrefix      = taskCount.Arg("prefix", "prefix").Default("").String()
+	taskCountSubprefixes = taskCount.Flag("subprefixes", "Include a detailed count of the subprefixes").Default("false").Bool()
+	taskCountFilter      = taskCount.Flag("filter", "A RE2 regular expression to filter the results by prefix").Default("").String()
 
 	///
 
@@ -71,14 +78,25 @@ var (
 	userDelete     = userCmd.Command("delete", "Delete an user")
 	userDeleteName = userDelete.Arg("username", "username").Required().String()
 
+	userRename     = userCmd.Command("rename", "Rename a user")
+	userRenameName = userRename.Arg("username", "username").Required().String()
+	userRenameNew  = userRename.Arg("newusername", "newusername").Required().String()
+
 	userPass     = userCmd.Command("passwd", "Change an user password")
 	userPassName = userPass.Arg("username", "username").Required().String()
 	userPassPass = userPass.Arg("password", "password").Required().String()
 
 	userList       = userCmd.Command("list", "List users on a prefix")
 	userListPrefix = userList.Arg("prefix", "prefix").Default("").String()
+	userListDepth  = userList.Flag("depth", "Limit the search to a depth of subprefixes").Default("-1").Int()
+	userListFilter = userList.Flag("filter", "A RE2 regular expression to filter the results by user").Default("").String()
 	userListLimit  = userList.Flag("limit", "Limit the number of users returned").Default("100").Int()
 	userListSkip   = userList.Flag("skip", "Skip a number of elements before applying the limit").Default("0").Int()
+
+	userCount            = userCmd.Command("count", "Count users on a prefix")
+	userCountPrefix      = userCount.Arg("prefix", "prefix").Default("").String()
+	userCountSubprefixes = userCount.Flag("subprefixes", "Include a detailed count of the subprefixes").Default("false").Bool()
+	userCountFilter      = userCount.Flag("filter", "A RE2 regular expression to filter the results by prefix").Default("").String()
 
 	userKick       = userCmd.Command("kick", "Kick users on a prefix")
 	userKickPrefix = userKick.Arg("prefix", "prefix").Required().String()
@@ -100,8 +118,15 @@ var (
 
 	sessionsList       = sessionsCmd.Command("list", "List active sessions")
 	sessionsListPrefix = sessionsList.Arg("prefix", "User prefix").Default("").String()
+	sessionsListDepth  = sessionsList.Flag("depth", "Limit the search to a depth of subprefixes").Default("-1").Int()
+	sessionsListFilter = sessionsList.Flag("filter", "A RE2 regular expression to filter the results by user").Default("").String()
 	sessionsListLimit  = sessionsList.Flag("limit", "Limit the number of sessions returned").Default("100").Int()
 	sessionsListSkip   = sessionsList.Flag("skip", "Skip a number of elements before applying the limit").Default("0").Int()
+
+	sessionsCount            = sessionsCmd.Command("count", "Count sessions from a user on a prefix")
+	sessionsCountPrefix      = sessionsCount.Arg("prefix", "prefix").Default("").String()
+	sessionsCountSubprefixes = sessionsCount.Flag("subprefixes", "Include a detailed count of the subprefixes").Default("false").Bool()
+	sessionsCountFilter      = sessionsCount.Flag("filter", "A RE2 regular expression to filter the results by prefix").Default("").String()
 
 	sessionsKick     = sessionsCmd.Command("kick", "Kick any active connection with matching prefix")
 	sessionsKickConn = sessionsKick.Arg("connId", "connId prefix").Required().String()
@@ -197,6 +222,18 @@ var (
 	chanPubJChan = chanPubJ.Arg("topic", "Topic to publish to").Required().String()
 	chanPubJMsg  = chanPubJ.Arg("data", "JSON data to send").Required().String()
 
+	chanList       = chanCmd.Command("list", "List topics on a prefix")
+	chanListPrefix = chanList.Arg("prefix", "prefix").Default("").String()
+	chanListDepth  = chanList.Flag("depth", "Limit the search to a depth of subprefixes").Default("-1").Int()
+	chanListFilter = chanList.Flag("filter", "A RE2 regular expression to filter the results by topic").Default("").String()
+	chanListLimit  = chanList.Flag("limit", "Limit the number of topics returned").Default("100").Int()
+	chanListSkip   = chanList.Flag("skip", "Skip a number of elements before applying the limit").Default("0").Int()
+
+	chanCount            = chanCmd.Command("count", "Count topics on a prefix")
+	chanCountPrefix      = chanCount.Arg("prefix", "prefix").Default("").String()
+	chanCountSubprefixes = chanCount.Flag("subprefixes", "Include a detailed count of the subprefixes").Default("false").Bool()
+	chanCountFilter      = chanCount.Flag("filter", "A RE2 regular expression to filter the results by prefix").Default("").String()
+
 	//
 
 	syncCmd = app.Command("sync", "Sync commands")
@@ -206,4 +243,16 @@ var (
 
 	syncUnlock     = syncCmd.Command("unlock", "Release a lock")
 	syncUnlockName = syncUnlock.Arg("name", "Name of the lock").Required().String()
+
+	syncList       = syncCmd.Command("list", "List locks on a prefix")
+	syncListPrefix = syncList.Arg("prefix", "prefix").Default("").String()
+	syncListDepth  = syncList.Flag("depth", "Limit the search to a depth of subprefixes").Default("-1").Int()
+	syncListFilter = syncList.Flag("filter", "A RE2 regular expression to filter the results by lock").Default("").String()
+	syncListLimit  = syncList.Flag("limit", "Limit the number of locks returned").Default("100").Int()
+	syncListSkip   = syncList.Flag("skip", "Skip a number of elements before applying the limit").Default("0").Int()
+
+	syncCount            = syncCmd.Command("count", "Count locks on a prefix")
+	syncCountPrefix      = syncCount.Arg("prefix", "prefix").Default("").String()
+	syncCountSubprefixes = syncCount.Flag("subprefixes", "Include a detailed count of the subprefixes").Default("false").Bool()
+	syncCountFilter      = syncCount.Flag("filter", "A RE2 regular expression to filter the results by prefix").Default("").String()
 )

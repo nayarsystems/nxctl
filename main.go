@@ -215,7 +215,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 		}
 
 	case taskList.FullCommand():
-		if res, err := nc.TaskList(*taskListPrefix, *taskListLimit, *taskListSkip); err != nil {
+		if res, err := nc.TaskList(*taskListPrefix, *taskListLimit, *taskListSkip, &nexus.ListOpts{LimitByDepth: true, Depth: *taskListDepth, Filter: *taskListFilter}); err != nil {
 			log.Println(err)
 			return
 		} else {
@@ -226,6 +226,26 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			for _, task := range res {
 				table.Append([]string{task.Id[:16], task.Id[16:], task.Path, task.Method, fmt.Sprintf("%v", task.Params), task.User, task.Stat, task.Tses})
 			}
+			table.Render()
+		}
+
+	case taskCount.FullCommand():
+		if res, err := nc.TaskCount(*taskCountPrefix, &nexus.CountOpts{Subprefixes: *taskCountSubprefixes, Filter: *taskCountFilter}); err != nil {
+			log.Println(err)
+			return
+		} else {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Prefix", "Count", "PushCount", "PullCount"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+
+			if *taskCountSubprefixes {
+				for _, el := range ei.N(res).SliceZ() {
+					table.Append([]string{ei.N(el).M("prefix").StringZ(), fmt.Sprintf("%d", ei.N(el).M("count").IntZ()), fmt.Sprintf("%d", ei.N(el).M("pushCount").IntZ()), fmt.Sprintf("%d", ei.N(el).M("pullCount").IntZ())})
+				}
+			} else {
+				table.Append([]string{*taskCountPrefix, fmt.Sprintf("%d", ei.N(res).M("count").IntZ()), fmt.Sprintf("%d", ei.N(res).M("pushCount").IntZ()), fmt.Sprintf("%d", ei.N(res).M("pullCount").IntZ())})
+			}
+
 			table.Render()
 		}
 
@@ -286,15 +306,24 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println("OK")
 		}
 
+	case userRename.FullCommand():
+		log.Printf("Renaming user \"%s\" to \"%s\"", *userRenameName, *userRenameNew)
+		if _, err := nc.UserRename(*userRenameName, *userRenameNew); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("OK")
+		}
+
 	case userList.FullCommand():
 		log.Printf("Listing users on \"%s\"", *userListPrefix)
 
-		if res, err := nc.UserList(*userListPrefix, *userListLimit, *userListSkip); err != nil {
+		if res, err := nc.UserList(*userListPrefix, *userListLimit, *userListSkip, &nexus.ListOpts{LimitByDepth: true, Depth: *userListDepth, Filter: *userListFilter}); err != nil {
 			log.Println(err)
 			return
 		} else {
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"User", "Templates", "Whitelist", "Blacklist", "Max Sessions", "Prefix", "Tags", "Disabled"})
+			table.SetHeader([]string{"User", "Created At", "Templates", "Whitelist", "Blacklist", "Max Sessions", "Prefix", "Tags", "Disabled"})
 			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
 			table.SetAlignment(tablewriter.ALIGN_CENTER)
 			table.SetRowLine(true)
@@ -306,6 +335,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 					if lines == 0 {
 						table.Append([]string{
 							user.User,
+							user.CreatedAt.String(),
 							fmt.Sprintf("%v", user.Templates),
 							fmt.Sprintf("%v", user.Whitelist),
 							fmt.Sprintf("%v", user.Blacklist),
@@ -323,6 +353,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 				if lines == 0 {
 					table.Append([]string{
 						user.User,
+						user.CreatedAt.String(),
 						fmt.Sprintf("%v", user.Templates),
 						fmt.Sprintf("%v", user.Whitelist),
 						fmt.Sprintf("%v", user.Blacklist),
@@ -336,6 +367,26 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 
 			table.Render() // Send output
 			fmt.Println()
+		}
+
+	case userCount.FullCommand():
+		if res, err := nc.UserCount(*userCountPrefix, &nexus.CountOpts{Subprefixes: *userCountSubprefixes, Filter: *userCountFilter}); err != nil {
+			log.Println(err)
+			return
+		} else {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Prefix", "Count"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+
+			if *userCountSubprefixes {
+				for _, el := range ei.N(res).SliceZ() {
+					table.Append([]string{ei.N(el).M("prefix").StringZ(), fmt.Sprintf("%d", ei.N(el).M("count").IntZ())})
+				}
+			} else {
+				table.Append([]string{*userCountPrefix, fmt.Sprintf("%d", ei.N(res).M("count").IntZ())})
+			}
+
+			table.Render()
 		}
 
 	case userPass.FullCommand():
@@ -397,7 +448,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 		}
 
 	case sessionsList.FullCommand():
-		if res, err := nc.SessionList(*sessionsListPrefix, *sessionsListLimit, *sessionsListSkip); err != nil {
+		if res, err := nc.SessionList(*sessionsListPrefix, *sessionsListLimit, *sessionsListSkip, &nexus.ListOpts{LimitByDepth: true, Depth: *sessionsListDepth, Filter: *sessionsListFilter}); err != nil {
 			log.Println(err)
 			return
 		} else {
@@ -419,6 +470,26 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			table.Render() // Send output
 			fmt.Println()
 
+		}
+
+	case sessionsCount.FullCommand():
+		if res, err := nc.SessionCount(*sessionsCountPrefix, &nexus.CountOpts{Subprefixes: *sessionsCountSubprefixes, Filter: *sessionsCountFilter}); err != nil {
+			log.Println(err)
+			return
+		} else {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Prefix", "Count"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+
+			if *sessionsCountSubprefixes {
+				for _, el := range ei.N(res).SliceZ() {
+					table.Append([]string{ei.N(el).M("prefix").StringZ(), fmt.Sprintf("%d", ei.N(el).M("count").IntZ())})
+				}
+			} else {
+				table.Append([]string{*sessionsCountPrefix, fmt.Sprintf("%d", ei.N(res).M("count").IntZ())})
+			}
+
+			table.Render()
 		}
 
 	case sessionsKick.FullCommand():
@@ -664,6 +735,44 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println("Result:", res)
 		}
 
+	case chanList.FullCommand():
+		if res, err := nc.TopicList(*chanListPrefix, *chanListLimit, *chanListSkip, &nexus.ListOpts{LimitByDepth: true, Depth: *chanListDepth, Filter: *chanListFilter}); err != nil {
+			log.Println(err)
+			return
+		} else {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Topic", "Subscribers"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+			for _, topic := range res {
+				table.Append([]string{topic.Topic, fmt.Sprintf("%d", topic.Subscribers)})
+
+			}
+
+			table.Render() // Send output
+			fmt.Println()
+
+		}
+
+	case chanCount.FullCommand():
+		if res, err := nc.TopicCount(*chanCountPrefix, &nexus.CountOpts{Subprefixes: *chanCountSubprefixes, Filter: *chanCountFilter}); err != nil {
+			log.Println(err)
+			return
+		} else {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Prefix", "Count"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+
+			if *chanCountSubprefixes {
+				for _, el := range ei.N(res).SliceZ() {
+					table.Append([]string{ei.N(el).M("prefix").StringZ(), fmt.Sprintf("%d", ei.N(el).M("count").IntZ())})
+				}
+			} else {
+				table.Append([]string{*chanCountPrefix, fmt.Sprintf("%d", ei.N(res).M("count").IntZ())})
+			}
+
+			table.Render()
+		}
+
 	case syncLock.FullCommand():
 		if res, err := nc.Lock(*syncLockName); err != nil {
 			log.Println(err)
@@ -678,6 +787,43 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			return
 		} else {
 			log.Println("Result:", res)
+		}
+
+	case syncList.FullCommand():
+		if res, err := nc.LockList(*syncListPrefix, *syncListLimit, *syncListSkip, &nexus.ListOpts{LimitByDepth: true, Depth: *syncListDepth, Filter: *syncListFilter}); err != nil {
+			log.Println(err)
+			return
+		} else {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"ID", "Owner"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+			for _, lock := range res {
+				table.Append([]string{lock.Id, lock.Owner})
+			}
+
+			table.Render() // Send output
+			fmt.Println()
+
+		}
+
+	case syncCount.FullCommand():
+		if res, err := nc.LockCount(*syncCountPrefix, &nexus.CountOpts{Subprefixes: *syncCountSubprefixes, Filter: *syncCountFilter}); err != nil {
+			log.Println(err)
+			return
+		} else {
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Prefix", "Count"})
+			table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+
+			if *syncCountSubprefixes {
+				for _, el := range ei.N(res).SliceZ() {
+					table.Append([]string{ei.N(el).M("prefix").StringZ(), fmt.Sprintf("%d", ei.N(el).M("count").IntZ())})
+				}
+			} else {
+				table.Append([]string{*syncCountPrefix, fmt.Sprintf("%d", ei.N(res).M("count").IntZ())})
+			}
+
+			table.Render()
 		}
 
 	case chanPubJ.FullCommand():
