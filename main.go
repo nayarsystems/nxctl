@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -163,6 +164,29 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 		}
 
 		if ret, err := nc.TaskPush(*pushJMethod, params, time.Second*time.Duration(*timeout)); err != nil {
+			log.Println("Error:", err)
+			return
+		} else {
+			b, _ := json.MarshalIndent(ret, "", "  ")
+			log.Println("Result:")
+			if s, err := strconv.Unquote(string(b)); err == nil {
+				fmt.Println(s)
+			} else {
+				fmt.Println(string(b))
+			}
+		}
+
+	case pushJF.FullCommand():
+		var params map[string]interface{}
+		if j, err := ioutil.ReadFile(*pushJFFile); err != nil {
+			log.Printf("Error opening file %s: %s\n", *pushJFFile, err.Error())
+			return
+		} else if err = json.Unmarshal(j, &params); err != nil {
+			log.Printf("Error parsing json from file %s: %s\n", *pushJFFile, err.Error())
+			return
+		}
+
+		if ret, err := nc.TaskPush(*pushJFMethod, params, time.Second*time.Duration(*timeout)); err != nil {
 			log.Println("Error:", err)
 			return
 		} else {
@@ -611,6 +635,26 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 			log.Println("OK")
 		}
 
+	case tagsSetJF.FullCommand():
+		// Clean afterwards in case we are looping on shell mode
+
+		var tags map[string]interface{}
+		if j, err := ioutil.ReadFile(*tagsSetJFFile); err != nil {
+			log.Printf("Error opening file %s: %s\n", *tagsSetJFFile, err.Error())
+			return
+		} else if err = json.Unmarshal(j, &tags); err != nil {
+			log.Printf("Error parsing json from file %s: %s\n", *tagsSetJFFile, err.Error())
+			return
+		}
+
+		log.Printf("Setting tags: %v on %s@%s", tags, *tagsSetJFUser, *tagsSetJFPrefix)
+		if _, err := nc.UserSetTags(*tagsSetJFUser, *tagsSetJFPrefix, tags); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("OK")
+		}
+
 	case tagsDel.FullCommand():
 		// Clean afterwards in case we are looping on shell mode
 		defer func() { *tagsDelTags = []string{} }()
@@ -834,6 +878,23 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 		}
 
 		if ret, err := nc.TopicPublish(*chanPubJChan, msg); err != nil {
+			log.Println(err)
+			return
+		} else {
+			log.Println("Result:", ret)
+		}
+
+	case chanPubJF.FullCommand():
+		var msg map[string]interface{}
+		if j, err := ioutil.ReadFile(*chanPubJFFile); err != nil {
+			log.Printf("Error opening file %s: %s\n", *chanPubJFFile, err.Error())
+			return
+		} else if err = json.Unmarshal(j, &msg); err != nil {
+			log.Printf("Error parsing json from file %s: %s\n", *chanPubJFFile, err.Error())
+			return
+		}
+
+		if ret, err := nc.TopicPublish(*chanPubJFChan, msg); err != nil {
 			log.Println(err)
 			return
 		} else {
