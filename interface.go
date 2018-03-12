@@ -42,6 +42,10 @@ var (
 	pushJMethod = pushJ.Arg("method", "Method to call").Required().String()
 	pushJParams = pushJ.Arg("json {param:value,...}", "{'param': 3, 'other': {'val': true}}").Required().String()
 
+	pushJF       = app.Command("pushjf", "Execute a task.push rpc call on Nexus with params read from a file.")
+	pushJFMethod = pushJF.Arg("method", "Method to call").Required().String()
+	pushJFFile   = pushJF.Arg("file", "Params json file").Required().String()
+
 	pull       = app.Command("pull", "Execute a task.pull rpc call on Nexus")
 	pullMethod = pull.Arg("prefix", "Method to call").Required().String()
 
@@ -161,6 +165,11 @@ var (
 	tagsSetJPrefix   = tagsSetJ.Arg("prefix", "prefix").Required().String()
 	tagsSetJTagsJson = tagsSetJ.Arg("json {tag:value,...}", "{'@task.push': true}").Required().String()
 
+	tagsSetJF       = tagsCmd.Command("setjf", "Set tags for an user on a prefix read from a file.")
+	tagsSetJFUser   = tagsSetJF.Arg("user", "user").Required().String()
+	tagsSetJFPrefix = tagsSetJF.Arg("prefix", "prefix").Required().String()
+	tagsSetJFFile   = tagsSetJF.Arg("file", "Tags json file").Required().String()
+
 	tagsDel       = tagsCmd.Command("del", "Delete tags for an user on a prefix. Tags is a list of space separated strings")
 	tagsDelUser   = tagsDel.Arg("user", "user").Required().String()
 	tagsDelPrefix = tagsDel.Arg("prefix", "prefix").Required().String()
@@ -221,6 +230,10 @@ var (
 	chanPubJ     = chanCmd.Command("pubj", "Publish a message to a topic. Data is a json dict like: { 'param': value }")
 	chanPubJChan = chanPubJ.Arg("topic", "Topic to publish to").Required().String()
 	chanPubJMsg  = chanPubJ.Arg("data", "JSON data to send").Required().String()
+
+	chanPubJF     = chanCmd.Command("pubjf", "Publish a message to a topic with json data read from a file.")
+	chanPubJFChan = chanPubJF.Arg("topic", "Topic to publish to").Required().String()
+	chanPubJFFile = chanPubJF.Arg("file", "Data json file").Required().String()
 
 	chanList       = chanCmd.Command("list", "List topics on a prefix")
 	chanListPrefix = chanList.Arg("prefix", "prefix").Default("").String()
