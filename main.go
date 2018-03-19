@@ -369,7 +369,7 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 							fmt.Sprintf("%t", user.Disabled),
 						})
 					} else {
-						table.Append([]string{"", "", "", "", "", prefix, fmt.Sprintf("%v", tags)})
+						table.Append([]string{"", "", "", "", "", "", prefix, fmt.Sprintf("%v", tags)})
 					}
 					lines++
 				}
