@@ -268,4 +268,14 @@ var (
 	syncCountPrefix      = syncCount.Arg("prefix", "prefix").Default("").String()
 	syncCountSubprefixes = syncCount.Flag("subprefixes", "Include a detailed count of the subprefixes").Default("false").Bool()
 	syncCountFilter      = syncCount.Flag("filter", "A RE2 regular expression to filter the results by prefix").Default("").String()
+
+	//
+
+	permissionsCmd = app.Command("permissions", "Permissions management")
+
+	permissionsCheck       = permissionsCmd.Command("check", "Check permissions match with a permissions file")
+	permissionsCheckConfig = permissionsCheck.Arg("config", "JSON config file containing the permissions").Required().String()
+
+	permissionsApply       = permissionsCmd.Command("apply", "Apply permissions match with a permissions file")
+	permissionsApplyConfig = permissionsApply.Arg("config", "JSON config file containing the permissions").Required().String()
 )

@@ -15,6 +15,7 @@ import (
 	"github.com/nayarsystems/kingpin"
 	nxcli "github.com/nayarsystems/nxgo"
 	nexus "github.com/nayarsystems/nxgo/nxcore"
+	"github.com/nayarsystems/nxusercheck"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/viper"
 )
@@ -900,5 +901,22 @@ func execCmd(nc *nexus.NexusConn, parsed string) {
 		} else {
 			log.Println("Result:", ret)
 		}
+
+	case permissionsCheck.FullCommand():
+		out, err := nxusercheck.CheckFileNexusConn(*permissionsCheckConfig, nc)
+		if err != nil {
+			log.Printf("Could not check permissions from file %s: %s\n", *permissionsCheckConfig, err)
+			return
+		}
+		fmt.Println(out)
+
+	case permissionsApply.FullCommand():
+		out, err := nxusercheck.ApplyFileNexusConn(*permissionsApplyConfig, nc)
+		if err != nil {
+			log.Printf("Could not apply permissions from file %s: %s\n", *permissionsCheckConfig, err)
+			return
+		}
+		fmt.Println(out)
+
 	}
 }
