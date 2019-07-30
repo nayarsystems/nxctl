@@ -2,8 +2,6 @@ module nxctl
 
 go 1.12
 
-replace github.com/nayarsystems/nxgo => ../nxgo
-
 require (
 	github.com/alecthomas/assert v0.0.0-20170929043011-405dbfeb8e38 // indirect
 	github.com/alecthomas/colour v0.0.0-20160524082231-60882d9e2721 // indirect
