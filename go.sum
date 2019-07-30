@@ -82,6 +82,8 @@ github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/nayarsystems/kingpin v2.1.12-0.20160708065759-1150db03cfa0+incompatible h1:rfhYF7RlnZ2zRHZXKwlps9Ws7mCjx5zM1ethwa4LliA=
 github.com/nayarsystems/kingpin v2.1.12-0.20160708065759-1150db03cfa0+incompatible/go.mod h1:DY0fZTTLjmRyYMoEUdbqsO06ERfj1jYLmk1/Hlxzotk=
+github.com/nayarsystems/nxgo v1.8.1 h1:88XWeeadJErDeI6VjBwauY1+FG2xSD5rwJaW0MrZPNY=
+github.com/nayarsystems/nxgo v1.8.1/go.mod h1:XzSFPYtI3CZ0z50P4KrPre/DfPEqYQc651iNO8pN2Q0=
 github.com/nayarsystems/nxusercheck v0.0.0-20181001140658-27465bdee236 h1:YCTOo5Yxvp8gpltL02/GLptO5NYf0znwJrfpXsJkUYA=
 github.com/nayarsystems/nxusercheck v0.0.0-20181001140658-27465bdee236/go.mod h1:OSZojgo1fOZsCawEMwTQ3pbPQWW/JvMqOJ29FsCOuGo=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=

@@ -1,4 +1,4 @@
-module nxctl
+module github.com/nayarsystems/nxctl
 
 go 1.12
 
@@ -7,6 +7,7 @@ require (
 	github.com/alecthomas/colour v0.0.0-20160524082231-60882d9e2721 // indirect
 	github.com/alecthomas/repr v0.0.0-20181024024818-d37bc2a10ba1 // indirect
 	github.com/jaracil/ei v0.0.0-20170808175009-4f519a480ebd
+	github.com/jaracil/smartio v0.0.0-20160606092121-a059462b5df8 // indirect
 	github.com/mattn/go-isatty v0.0.8 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/nayarsystems/kingpin v2.1.12-0.20160708065759-1150db03cfa0+incompatible
